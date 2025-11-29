@@ -4,6 +4,9 @@ import { router } from "../../utils/router.js";
 
 let userObject = getUserObject();
 
+let allSneakers = [];
+let activeBrand = "All";
+
 export function Home() {
   return El({
     element: "div",
@@ -35,7 +38,8 @@ function createBrandButtonGroupsEl() {
   const token = userObject.token;
   const brandButtonGroupsEl = El({
     element: "div",
-    className: "flex gap-2 w-full",
+    className:
+      "flex pl-5 items-center gap-3 overflow-x-auto hide-scrollbar bg-white w-full h-[39px]",
     id: "brandDiv",
   });
 
@@ -59,7 +63,8 @@ function createBrandButtonGroupsEl() {
         const errorData = await res.json();
         throw new Error(errorData.message || "Request failed");
       }
-      const data = await res.json();
+      let data = await res.json();
+      data.unshift("All");
       data.forEach((item) => {
         const brandsButtons = createBrandsButtons(item);
       });
