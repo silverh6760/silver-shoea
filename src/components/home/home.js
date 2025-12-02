@@ -1,81 +1,245 @@
 import { El } from "../../utils/el";
 import { BASE_URL, router } from "../../utils/router.js";
-import { router } from "../../utils/router.js";
 
 let userObject = getUserObject();
 
-let allSneakers = [];
-let activeBrand = "All";
+console.log(userObject);
 
 export function Home() {
   return El({
     element: "div",
-    className: "flex flex-col justify-between",
+    className: "flex flex-col h-screen w-full overflow-hidden",
     children: [
       createHeaderEl(),
       createSearchBarEl(),
       createMostPopularEl(),
       // createInfinityText(),
-      // createActionBarEl(),
+      createActionBarEl(),
     ],
+  });
+}
+
+function createActionBarEl() {
+  return El({
+    element: "div",
+    className:
+      "flex w-full h-[66px] fixed bottom-0 bg-white px-12 py-10 items-center justify-between",
+    children: [
+      createActionButton("../../../public/assets/svg/home/home.svg", "Home"),
+      createActionButton("../../../public/assets/svg/home/cart.svg", "Cart", {
+        event: "click",
+        callback: () => router.navigate("/cart"),
+      }),
+      createActionButton(
+        "../../../public/assets/svg/home/orders.svg",
+        "Orders"
+      ),
+      createActionButton(
+        "../../../public/assets/svg/home/wallet.svg",
+        "Wallet"
+      ),
+      createActionButton(
+        "../../../public/assets/svg/home/profile.svg",
+        "Profile"
+      ),
+    ],
+  });
+}
+
+function createActionButton(url, btnName, callback = {}) {
+  return El({
+    element: "div",
+    className: "flex flex-col w-[29px] h-[38px] gap-1 items-center",
+    children: [
+      El({
+        element: "img",
+        src: url,
+        className: "flex-1",
+      }),
+      El({
+        element: "div",
+        className:
+          "font-semibold text-[10px] leading-none tracking-[-4%] align-middle",
+        innerText: btnName,
+      }),
+    ],
+    eventListener: [callback],
   });
 }
 
 function createMostPopularEl() {
+  createBrandButtonGroupsEl();
   return El({
     element: "div",
-    className: "flex flex-col absolute top-[155px] w-full",
+    className: "flex flex-col absolute top-[155px] w-full gap-5",
     children: [
       createMostPopularAndSeeAllTextEl(),
-      createBrandButtonGroupsEl(),
-      // createAllSneakersEl(),
+      brandButtonGroupsEl,
+      productsDiv,
     ],
   });
 }
 
+const brandButtonGroupsEl = El({
+  element: "div",
+  className:
+    "flex pl-5 items-center gap-3 overflow-x-auto hide-scrollbar bg-white w-full h-[39px]",
+  id: "brandsDiv",
+  children: [createBrandsButton("All")],
+});
+
+const productsDiv = El({
+  element: "div",
+  className:
+    "pl-5 pr-5 h-auto grid grid-cols-2 gap-5 overflow-auto hide-scrollbar flex-1",
+  id: "productsDiv",
+});
+
+let activeBrand = "All";
+let allProducts = [];
+const BRAND_API_URL = `${BASE_URL}/sneaker/brands`;
+const PRODUCTS_API_URL = `${BASE_URL}/sneaker?page=1&limit=100`;
+
 function createBrandButtonGroupsEl() {
-  const API_URL = `${BASE_URL}/sneaker/brands`;
-  const token = userObject.token;
-  const brandButtonGroupsEl = El({
-    element: "div",
-    className:
-      "flex pl-5 items-center gap-3 overflow-x-auto hide-scrollbar bg-white w-full h-[39px]",
-    id: "brandDiv",
-  });
+  getBrands();
+  getProducts();
+}
 
-  async function getBrands() {
-    try {
-      const res = await fetch(API_URL, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+async function getProducts() {
+  try {
+    const res = await fetch(PRODUCTS_API_URL, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userObject.token}`,
+      },
+    });
 
-      if (res.status === 403) {
-        console.warn("Forbidden: Invalid token");
-        router.navigate("/login");
-        return;
-      }
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Request failed");
-      }
-      let data = await res.json();
-      data.unshift("All");
-      data.forEach((item) => {
-        const brandsButtons = createBrandsButtons(item);
-      });
-    } catch (error) {
-      console.error(error);
+    if (res.status === 403) {
+      console.warn("Forbidden: Invalid token");
+      router.navigate("/login");
+      return;
     }
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Request failed");
+    }
+    let data = await res.json();
+    allProducts = data.data || [];
+    updateProducts();
+  } catch (error) {
+    console.error(error);
   }
 }
 
-function createBrandsButtons(item) {
-  return El({});
+function createProductCard(product) {
+  return El({
+    element: "div",
+    className: "shrink-0 h-61 w-46 flex flex-col gap-2",
+    eventListener: [
+      {
+        event: "click",
+        callback: () => {
+          localStorage.setItem("selectedProduct", JSON.stringify(product));
+          //goto router.navigate("/product:product.id");
+          router.navigate("/product");
+        },
+      },
+    ],
+    children: [
+      El({
+        element: "div",
+        className:
+          "w-[182px] h-[182px] rounded-3xl flex justify-center items-center",
+        children: [
+          El({
+            element: "img",
+            src: product.imageURL,
+            className: "w-full h-full object-cover rounded-3xl",
+          }),
+        ],
+      }),
+      El({
+        element: "p",
+        className: "text-[18px] font-bold text-[#152536] truncate",
+        innerText: product.name,
+      }),
+      El({
+        element: "p",
+        className: "text-[16px] font-semibold text-[#152536]",
+        innerText: "$ " + product.price,
+      }),
+    ],
+  });
+}
+
+async function getBrands() {
+  try {
+    const res = await fetch(BRAND_API_URL, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userObject.token}`,
+      },
+    });
+
+    if (res.status === 403) {
+      console.warn("Forbidden: Invalid token");
+      router.navigate("/login");
+      return;
+    }
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Request failed");
+    }
+    let data = await res.json();
+    // data = ["All", ...data];
+    // data.unshift("All");
+    data.forEach((brand) => {
+      brandButtonGroupsEl.appendChild(createBrandsButton(brand));
+    });
+    updateBrandStyles();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function createBrandsButton(brand) {
+  const btn = El({
+    element: "button",
+    innerText: brand,
+    eventListener: [
+      {
+        event: "click",
+        callback: () => {
+          activeBrand = brand;
+          updateBrandStyles();
+          updateProducts();
+        },
+      },
+    ],
+  });
+  btn.dataset.brand = brand;
+  return btn;
+}
+
+function updateProducts() {
+  productsDiv.innerHTML = "";
+  let filtered = allProducts;
+
+  if (activeBrand !== "All") {
+    //do not filter. send request based on brand
+    filtered = allProducts.filter((item) => {
+      return (
+        item.brand && item.brand.toUpperCase() === activeBrand.toUpperCase()
+      );
+    });
+  }
+  filtered.forEach((item) => {
+    productsDiv.appendChild(createProductCard(item));
+  });
 }
 
 function createMostPopularAndSeeAllTextEl() {
@@ -149,6 +313,7 @@ function createBellHeart() {
 }
 
 function createMorningBox() {
+  //todo check time
   return El({
     element: "div",
     className: "flex flex-col gap-3",
@@ -191,6 +356,20 @@ function getUserObject() {
     return acc;
   }, {});
   return cookies;
+}
+
+function updateBrandStyles() {
+  const buttons = brandButtonGroupsEl.children;
+  for (let i = 0; i < buttons.length; i++) {
+    const btn = buttons[i];
+    if ((btn.dataset.brand || "").toUpperCase() === activeBrand.toUpperCase()) {
+      btn.className =
+        "shrink-0 border-2 border-[#343a40] h-10 px-4 text-white text-center font-bold rounded-3xl bg-[#343a40]";
+    } else {
+      btn.className =
+        "shrink-0 border-2 border-[#343a40] h-10 px-4 text-[#343a40] text-center font-bold rounded-3xl bg-white";
+    }
+  }
 }
 
 // {
