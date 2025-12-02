@@ -16,9 +16,7 @@ router.addRoute("/onboarding3", OnboardingSwiper);
 router.addRoute("/login", LoginPage);
 router.addRoute("/signup", Signup);
 router.addRoute("/home", HomePage);
-router.addRoute("/product", ProductPage);
+router.addRoute("/product/:id", ProductPage);
 router.addRoute("/cart", CartPage);
 
-// router.addRoute("/onboarding/page", onboardingPageTwo);
-// router.navigate("/onboarding");
 router.init(app);

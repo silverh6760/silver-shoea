@@ -68,14 +68,14 @@ function createActionButton(url, btnName, callback = {}) {
 }
 
 function createMostPopularEl() {
-  createBrandButtonGroupsEl();
+  getBrandsAndProducts();
   return El({
     element: "div",
     className: "flex flex-col absolute top-[155px] w-full gap-5",
     children: [
       createMostPopularAndSeeAllTextEl(),
       brandButtonGroupsEl,
-      productsDiv,
+      productsEl,
     ],
   });
 }
@@ -88,7 +88,7 @@ const brandButtonGroupsEl = El({
   children: [createBrandsButton("All")],
 });
 
-const productsDiv = El({
+const productsEl = El({
   element: "div",
   className:
     "pl-5 pr-5 h-auto grid grid-cols-2 gap-5 overflow-auto hide-scrollbar flex-1",
@@ -100,7 +100,7 @@ let allProducts = [];
 const BRAND_API_URL = `${BASE_URL}/sneaker/brands`;
 const PRODUCTS_API_URL = `${BASE_URL}/sneaker?page=1&limit=100`;
 
-function createBrandButtonGroupsEl() {
+function getBrandsAndProducts() {
   getBrands();
   getProducts();
 }
@@ -143,7 +143,9 @@ function createProductCard(product) {
         callback: () => {
           localStorage.setItem("selectedProduct", JSON.stringify(product));
           //goto router.navigate("/product:product.id");
-          router.navigate("/product");
+          console.log(product);
+
+          router.navigate(`/product/${product.id}`);
         },
       },
     ],
@@ -226,7 +228,7 @@ function createBrandsButton(brand) {
 }
 
 function updateProducts() {
-  productsDiv.innerHTML = "";
+  productsEl.innerHTML = "";
   let filtered = allProducts;
 
   if (activeBrand !== "All") {
@@ -238,7 +240,7 @@ function updateProducts() {
     });
   }
   filtered.forEach((item) => {
-    productsDiv.appendChild(createProductCard(item));
+    productsEl.appendChild(createProductCard(item));
   });
 }
 
