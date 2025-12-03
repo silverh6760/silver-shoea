@@ -1,9 +1,8 @@
 import { El } from "../../utils/el";
 import { BASE_URL, router } from "../../utils/router.js";
+import { getUserObject } from "../../utils/userObject.js";
 
 let userObject = getUserObject();
-
-console.log(userObject);
 
 export function Home() {
   return El({
@@ -141,10 +140,6 @@ function createProductCard(product) {
       {
         event: "click",
         callback: () => {
-          localStorage.setItem("selectedProduct", JSON.stringify(product));
-          //goto router.navigate("/product:product.id");
-          console.log(product);
-
           router.navigate(`/product/${product.id}`);
         },
       },
@@ -197,8 +192,6 @@ async function getBrands() {
       throw new Error(errorData.message || "Request failed");
     }
     let data = await res.json();
-    // data = ["All", ...data];
-    // data.unshift("All");
     data.forEach((brand) => {
       brandButtonGroupsEl.appendChild(createBrandsButton(brand));
     });
@@ -349,16 +342,16 @@ function createGoodMorningEl() {
   });
 }
 
-function getUserObject() {
-  const cookies = document.cookie.split(";").reduce((acc, item) => {
-    const [key, value] = item.split("=").map((v) => v.trim());
-    if (key === "username" || key === "token") {
-      acc[key] = decodeURIComponent(value);
-    }
-    return acc;
-  }, {});
-  return cookies;
-}
+// function getUserObject() {
+//   const cookies = document.cookie.split(";").reduce((acc, item) => {
+//     const [key, value] = item.split("=").map((v) => v.trim());
+//     if (key === "username" || key === "token") {
+//       acc[key] = decodeURIComponent(value);
+//     }
+//     return acc;
+//   }, {});
+//   return cookies;
+// }
 
 function updateBrandStyles() {
   const buttons = brandButtonGroupsEl.children;
