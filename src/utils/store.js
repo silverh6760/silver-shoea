@@ -1,5 +1,12 @@
 function createStore() {
-  const state = {};
+  const state = {
+    isModalOpen: false,
+    isLoading: false,
+    sharedValue: "",
+    deleteIndex: null,
+    confirmDelete: false,
+    cartChanged: 0,
+  };
   const listeners = {};
 
   function setState(key, value) {
