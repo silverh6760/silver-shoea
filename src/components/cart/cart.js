@@ -19,7 +19,7 @@ const totalPriceEl = El({
 });
 
 export function Cart() {
-  cartItems = getCartItems();
+  getCartItems();
   return El({
     element: "div",
     className: "flex flex-col w-full h-232",
@@ -50,7 +50,186 @@ function updateTotal() {
   totalPriceEl.innerText = "$" + total.toFixed(2);
 }
 
-function createCartCard(item, index) {}
+function createCartCard(item, index) {
+  return El({
+    element: "div",
+    className:
+      "shrink-0 h-42 flex gap-4 pl-5 pr-5 rounded-3xl bg-[#ffffff] items-center",
+    children: [
+      createItemImageEl(item.sneaker.imageURL),
+      createItemActionsAndDetailsEl(item, index),
+    ],
+  });
+}
+
+function createItemActionsAndDetailsEl(item, index) {
+  return El({
+    element: "div",
+    className: "flex flex-col gap-4 w-50",
+    children: [
+      createNameAndTrashbinEl(item, index),
+      createSizeAndColorEl(item),
+      createPlusMinusQuantityEl(item),
+    ],
+  });
+}
+
+function createPlusMinusQuantityEl(item) {
+  const price = item.sneaker.price;
+  const quantity = item.quantity;
+  return El({
+    element: "div",
+    className: "flex justify-between",
+    children: [
+      createTotalPriceForEachItemEl(price, quantity),
+      createPlusMinusDetailEl(item),
+    ],
+  });
+}
+
+function createPlusMinusDetailEl(item) {
+  return El({
+    element: "div",
+    className:
+      "flex bg-[#f3f3f3] justify-center gap-4 items-center w-25 h-9 rounded-3xl",
+    children: [
+      createMinusItemEl(item),
+      createQuantityEl(item),
+      createPlusItemEl(item),
+    ],
+  });
+}
+
+function createMinusItemEl(item) {
+  return El({
+    element: "div",
+    className: "font-semibold mb-3",
+    innerText: "_",
+    eventListener: [
+      {
+        event: "click",
+        callback: () => {
+          if (quantity > 1) {
+            item.quantity--;
+            updateCart(item);
+            getCartItems();
+            renderCart();
+          }
+        },
+      },
+    ],
+  });
+}
+function createPlusItemEl(item) {
+  return El({
+    element: "div",
+    className: "font-semibold",
+    innerText: "+",
+    eventListener: [
+      {
+        event: "click",
+        callback: () => {
+          item.quantity++;
+          updateCart(item);
+          getCartItems();
+          renderCart();
+        },
+      },
+    ],
+  });
+}
+
+function createQuantityEl(item) {
+  return El({
+    element: "div",
+    className: "font-semibold",
+    innerText: String(item.quantity),
+  });
+}
+
+function createTotalPriceForEachItemEl(price, quantity) {
+  return El({
+    element: "div",
+    innerText: "$" + (price * quantity).toFixed(2),
+  });
+}
+
+function createSizeAndColorEl(item) {
+  const color = item.sneaker.colors.split("|")[0];
+  const size = item.sneaker.sizes.split("|")[0];
+  return El({
+    element: "div",
+    className: "flex items-center gap-2",
+    children: [
+      El({
+        element: "div",
+        className: "bg-black mt-1 w-4 h-4 rounded-full",
+        style: `background:${color};`,
+      }),
+      El({
+        element: "p",
+        className: "text-[#646360] text-sm",
+        innerText: color,
+      }),
+      El({
+        element: "div",
+        className: "w-px ml-1 h-4 bg-[#646360] ",
+      }),
+      El({
+        element: "p",
+        className: "text-[#646360] text-sm",
+        innerText: "size = " + size,
+      }),
+    ],
+  });
+}
+
+function createNameAndTrashbinEl(item, index) {
+  return El({
+    element: "div",
+    className: "flex gap-4",
+    children: [createItemNameEl(item.sneaker.name), createTrashbinEl(index)],
+  });
+}
+
+function createTrashbinEl(index) {
+  return El({
+    element: "img",
+    className: "w-6",
+    src: "../../../public/assets/svg/cart/cart-trashbin.svg",
+    eventListener: [
+      {
+        event: "click",
+        callback: () => {
+          store.setState("isModalOpen", true);
+          store.setState("deleteIndex", index);
+        },
+      },
+    ],
+  });
+}
+
+function createItemNameEl(name) {
+  return El({
+    element: "p",
+    className: "text-[18px] font-bold text-[#152536] truncate",
+    innerText: name,
+  });
+}
+
+function createItemImageEl(url) {
+  return El({
+    element: "div",
+    className: "w-40 rounded-3xl flex justify-center items-center",
+    children: [
+      El({
+        element: "img",
+        src: url,
+        className: "w-full rounded-3xl",
+      }),
+    ],
+  });
+}
 
 function createHeaderEl() {
   return El({
@@ -121,8 +300,12 @@ async function getCartItems() {
       const errorData = await res.json();
       throw new Error(errorData.message || "Request failed");
     }
-    return await res.json();
+    cartItems = await res.json();
   } catch (error) {
     console.error(error);
   }
+}
+
+async function updateCart(item) {
+  //patch cart
 }
