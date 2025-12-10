@@ -1,9 +1,11 @@
 import { El } from "../../utils/el";
 import { getUserObject } from "../../utils/userObject";
+import { RemoveCart } from "./remove-cart";
 
 const GET_CART_ITEMS_API_URL = `${BASE_URL}/cart`;
 let cartItems = [];
 let userObject = getUserObject();
+const removeCartObject = {};
 
 const cartItemsEl = El({
   element: "div",
@@ -27,6 +29,46 @@ export function Cart() {
       createHeaderEl(),
       createCartItemsEl(),
       createTotalPriceAndCheckoutEl(),
+      createActionBarEl(),
+      RemoveCart(removeCartObject),
+    ],
+  });
+}
+
+function createActionBarEl() {
+  return El({
+    element: "div",
+    className:
+      "flex w-full h-[66px] fixed bottom-0 bg-white px-12 py-10 items-center justify-between",
+    children: [
+      createActionButton(
+        "../../../public/assets/svg/cart/cart-home.svg",
+        "Home",
+        {
+          event: "click",
+          callback: () => router.navigate("/home"),
+        }
+      ),
+      createActionButton(
+        "../../../public/assets/svg/cart/black-cart.svg",
+        "Cart",
+        {
+          event: "click",
+          callback: () => router.navigate("/cart"),
+        }
+      ),
+      createActionButton(
+        "../../../public/assets/svg/cart/cart-orders.svg",
+        "Orders"
+      ),
+      createActionButton(
+        "../../../public/assets/svg/cart-wallet.svg",
+        "Wallet"
+      ),
+      createActionButton(
+        "../../../public/assets/svg/cart-profile.svg",
+        "Profile"
+      ),
     ],
   });
 }
@@ -90,8 +132,8 @@ function createCartItemsEl() {
 
 function renderCart() {
   cartItemsEl.innerHTML = "";
-  cartItems.forEach((item, index) => {
-    cartItemsEl.appendChild(createCartCard(item, index));
+  cartItems.forEach((item) => {
+    cartItemsEl.appendChild(createCartCard(item));
   });
   updateTotal();
 }
@@ -106,24 +148,24 @@ function updateTotal() {
   totalPriceEl.innerText = "$" + total.toFixed(2);
 }
 
-function createCartCard(item, index) {
+function createCartCard(item) {
   return El({
     element: "div",
     className:
       "shrink-0 h-42 flex gap-4 pl-5 pr-5 rounded-3xl bg-[#ffffff] items-center",
     children: [
       createItemImageEl(item.sneaker.imageURL),
-      createItemActionsAndDetailsEl(item, index),
+      createItemActionsAndDetailsEl(item),
     ],
   });
 }
 
-function createItemActionsAndDetailsEl(item, index) {
+function createItemActionsAndDetailsEl(item) {
   return El({
     element: "div",
     className: "flex flex-col gap-4 w-50",
     children: [
-      createNameAndTrashbinEl(item, index),
+      createNameAndTrashbinEl(item),
       createSizeAndColorEl(item),
       createPlusMinusQuantityEl(item),
     ],
@@ -240,15 +282,15 @@ function createSizeAndColorEl(item) {
   });
 }
 
-function createNameAndTrashbinEl(item, index) {
+function createNameAndTrashbinEl(item) {
   return El({
     element: "div",
     className: "flex gap-4",
-    children: [createItemNameEl(item.sneaker.name), createTrashbinEl(index)],
+    children: [createItemNameEl(item.sneaker.name), createTrashbinEl(item)],
   });
 }
 
-function createTrashbinEl(index) {
+function createTrashbinEl(item) {
   return El({
     element: "img",
     className: "w-6",
@@ -258,7 +300,7 @@ function createTrashbinEl(index) {
         event: "click",
         callback: () => {
           store.setState("isModalOpen", true);
-          store.setState("deleteIndex", index);
+          removeCartObject = item;
         },
       },
     ],

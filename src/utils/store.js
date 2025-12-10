@@ -3,9 +3,8 @@ function createStore() {
     isModalOpen: false,
     isLoading: false,
     sharedValue: "",
-    deleteIndex: null,
+    cartId: null,
     confirmDelete: false,
-    cartChanged: 0,
   };
   const listeners = {};
 
