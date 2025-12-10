@@ -23,7 +23,63 @@ export function Cart() {
   return El({
     element: "div",
     className: "flex flex-col w-full h-232",
-    children: [createHeaderEl(), createCartItemsEl()],
+    children: [
+      createHeaderEl(),
+      createCartItemsEl(),
+      createTotalPriceAndCheckoutEl(),
+    ],
+  });
+}
+
+function createTotalPriceAndCheckoutEl() {
+  return El({
+    element: "div",
+    className:
+      "fixed bottom-17 bg-[#ffffff] rounded-t-4xl h-25 w-full items-center flex mt-11 pl-6 gap-12",
+    children: [
+      createTotalPriceEl(),
+      createCheckoutEl(),
+      createTurnRightArrowEl(),
+    ],
+  });
+}
+
+function createTurnRightArrowEl() {
+  return El({
+    element: "img",
+    className: "absolute right-23 bottom-10.5 w-4",
+    src: "../../../public/assets/svg/cart/turn-right-arrow.svg",
+  });
+}
+
+function createCheckoutEl() {
+  El({
+    element: "button",
+    className: "bg-[#101010] w-60 h-14 rounded-4xl pr-7 text-white shadow-",
+    innerText: "Checkout",
+    eventListener: [
+      {
+        event: "click",
+        callback: () => {
+          router.navigate("/checkout");
+        },
+      },
+    ],
+  });
+}
+
+function createTotalPriceEl() {
+  return El({
+    element: "div",
+    className: "flex flex-col w-25",
+    children: [
+      El({
+        element: "p",
+        className: "text-[12px] text-[#717171]",
+        innerText: "Total price",
+      }),
+      totalPriceEl,
+    ],
   });
 }
 
