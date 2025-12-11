@@ -22,6 +22,9 @@ const totalPriceEl = El({
 
 export function Cart() {
   getCartItems();
+  store.subscribe("cartChanged", () => {
+    renderCart();
+  });
   return El({
     element: "div",
     className: "flex flex-col w-full h-232",
@@ -299,8 +302,8 @@ function createTrashbinEl(item) {
       {
         event: "click",
         callback: () => {
-          store.setState("isModalOpen", true);
           removeCartObject = item;
+          store.setState("isModalOpen", true);
         },
       },
     ],

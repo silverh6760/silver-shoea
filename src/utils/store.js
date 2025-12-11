@@ -1,6 +1,7 @@
 function createStore() {
   const state = {
     isModalOpen: false,
+    cartChanged: false,
     isLoading: false,
     sharedValue: "",
     cartId: null,
