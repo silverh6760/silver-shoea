@@ -7,6 +7,7 @@ let product = {};
 const params = router.getCurrentParams();
 const sneakerId = params.id;
 const PRODUCT_API_URL = `${BASE_URL}/sneaker/item/${sneakerId}`;
+const CREATE_CART_ITEM_API_URL = `${BASE_URL}/cart`;
 let selectedSize = null;
 let selectedColor = null;
 let quantity = 0;
@@ -475,10 +476,6 @@ const addToCartBtnEl = El({
   ],
 });
 
-function saveToCart(cartItem) {
-  //fetch post cart
-}
-
 function createAddToCartEl() {
   return El({
     element: "div",
@@ -537,15 +534,31 @@ async function getProduct() {
   }
 }
 
-// {
-//     "id": 1,
-//     "pid": 1,
-//     "name": "Nike React Infinity Run Flyknit",
-//     "imageURL": "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/i1-665455a5-45de-40fb-945f-c1852b82400d/react-infinity-run-flyknit-mens-running-shoe-zX42Nc.jpg",
-//     "colors": "black|brown|white|blue|red",
-//     "sizes": "41|43|45",
-//     "price": 160,
-//     "category": "RUNNING",
-//     "gender": "MEN",
-//     "brand": "NIKE"
-// }
+async function saveToCart(cartItem) {
+  try {
+    const res = await fetch(CREATE_CART_ITEM_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userObject.token}`,
+      },
+      body: JSON.stringify({
+        sneakerId: cartItem.productId,
+        quantity: cartItem.quantity,
+      }),
+    });
+
+    if (res.status === 403) {
+      console.warn("Forbidden: Invalid token");
+      router.navigate("/login");
+      return;
+    }
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Request failed");
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}

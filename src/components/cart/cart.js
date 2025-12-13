@@ -1,6 +1,7 @@
 import { El } from "../../utils/el";
 import { getUserObject } from "../../utils/userObject";
 import { RemoveCart } from "./remove-cart";
+import { BASE_URL, router } from "../../utils/router.js";
 
 const GET_CART_ITEMS_API_URL = `${BASE_URL}/cart`;
 let cartItems = [];
@@ -408,5 +409,29 @@ async function getCartItems() {
 }
 
 async function updateCart(item) {
-  //patch cart
+  try {
+    const res = await fetch(GET_CART_ITEMS_API_URL + `/${item.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userObject.token}`,
+      },
+      body: JSON.stringify({
+        quantity: item.quantity,
+      }),
+    });
+
+    if (res.status === 403) {
+      console.warn("Forbidden: Invalid token");
+      router.navigate("/login");
+      return;
+    }
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Request failed");
+    }
+  } catch (error) {
+    console.error(error);
+  }
 }

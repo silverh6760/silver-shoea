@@ -1,5 +1,7 @@
-import { ESModulesEvaluator } from "vite/module-runner";
 import { El } from "../../utils/el";
+import { BASE_URL, router } from "../../utils/router";
+
+const DELETE_CART_ITEMS_API_URL = `${BASE_URL}/cart`;
 
 export function RemoveCart(cart) {
   const modalEl = El({
@@ -86,10 +88,6 @@ function createRemoveBtnEl(cart) {
       },
     ],
   });
-}
-
-function deleteCart(id) {
-  //call remove cart api
 }
 
 function createCartItemDetailEl(cart) {
@@ -222,6 +220,31 @@ function createLineBreakerEl() {
     element: "div",
     className: "w-95 mx-auto h-px bg-[#eeefef] my-4",
   });
+}
+
+async function deleteCart(id) {
+  try {
+    const res = await fetch(DELETE_CART_ITEMS_API_URL + `/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userObject.token}`,
+      },
+    });
+
+    if (res.status === 403) {
+      console.warn("Forbidden: Invalid token");
+      router.navigate("/login");
+      return;
+    }
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Request failed");
+    }
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 // {
